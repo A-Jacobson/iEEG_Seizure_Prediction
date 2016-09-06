@@ -6,10 +6,10 @@ import re
 from glob import glob
 import numpy as np
 
-def preprocess(sample):
-    return signal.resample(sample, 600, window=400).flatten('F')
-
 class IEEG_Data:
+
+    def __init__(self, dirpath=os.path.abspath(os.path.join('E:', 'Seizure_Data'))):
+        self.dirpath = dirpath
 
     def preprocess(self, x):
         return signal.resample(x, 600, window=400).flatten('F')
@@ -33,22 +33,38 @@ class IEEG_Data:
         else:
             return data
 
-    def read_files(self, dirpath=os.path.abspath(os.path.join('E:', 'Seizure_Data', 'train_1', '*.mat'))):
-        files = glob(dirpath)
-        if 'train' in dirpath:
+    def load(self, dirname):
+        path = os.path.join(self.dirpath, dirname, '*.mat')
+        files = glob(path)
+        if 'train' in dirname:
             X = []
             y = []
+            i = 1
             for f in files:
-                i = 1
                 if i % 100 == 0:
-                    print "file ", i, " of ", len(files)
-                    print os.path.basename(f)
-                x_i, y_i = self.read_file(f)
-                x_i = self.preprocess(x_i)
-                X.append(x_i)
-                y.append(y_i)
-                i += 1
-            return np.array(X), np.array(y)
+                    print "loading file ", i, " of ", len(files)
+                try:
+                    x_i, y_i = self.read_file(f)
+                    x_i = self.preprocess(x_i)
+                    X.append(x_i)
+                    y.append(y_i)
+                    i += 1
+                except Exception as e:
+                    print f
+                    print e
+            return np.array(X), np.array(y), map(os.path.basename, files)
         else:
-            X = np.array([self.preprocess(self.read_file(f, train=False)) for f in files])
-            return X
+            for f in files:
+                if i % 100 == 0:
+                    print "loading file ", i, " of ", len(files)
+                try:
+                    x_i = self.read_file(f, train=False)
+                    x_i = self.preprocess(x_i)
+                    X.append(x_i)
+                    i += 1
+                except Exception as e:
+                    print f
+                    print e
+            return np.array(X), map(os.path.basename, files)
+
+if __name__ == '__main__':
