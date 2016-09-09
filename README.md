@@ -1,17 +1,34 @@
 # iEEG Seizure Prediction
 Seizure prediction model from Kaggle's iEEG Data. For https://www.kaggle.com/c/melbourne-university-seizure-prediction
 
-## Workflow
+## General Strategy
+- build 3, per subject classifiers.
+- format multichannel signal chunks as images and feed time domain features to model.
+- extract featurevector using signal processing techniques such as frequency domain analysis and feed to multiple non-deep classifiers.
+- feed featurevector generator by cnn to other classifiers.
+- try different methods such as smote and cost function weighting to combat class imbalance.
+- ensemble.
+- try meta classifiers train on all the data.
 
-- load .mat files
-- check class balance
+## Preprocessing Strategy
+- Data consists of 10 minute buffers of multichannel iEEG signal data, split into two classes (Interictal and Preictal).
+- Drop full 0 samples.
+- filter or interpolate partial 0 samples.
+- experiment with statistical features such as `mean`, `std`, and `absmean` frequency per channel.
+- resample time domain to 600 samples.
+- try different lowpass and bandpass filters.
+- try sliding window analysis.
+- convert to frequency domain with `rfft`.
+- experiment with different fft frequency slices.
+- experiment with `absolute` and `log10` of frequency slices to represent magnitude and normally distributed magnitude respectively.
+- try wavelet transforms.
 
-## Preprocessing
-- Data consists of 10 minute buffers of multichannel iEEG signal data, split into two classes (Interictal and Preictal)
-- Use Signal processing techniques to extract relevant features from data
+## Todo
+- refactor code into pipeline for fast iteration with multiple feature transforms/models.
+- save different feature map combinations as numpy arrays.
+- get xgboost working on windows.
 
 ## Relevant Resources
-
 - Prediction of the onset of epileptic seizures from iEEG data: http://cs229.stanford.edu/proj2014/Shima%20Alizadeh,%20Scott%20Davidson,%20Ari%20Frankel,Prediction%20Onset%20Epileptic.pdf
 - 2014 Kaggle competition with Dog iEEG's: https://www.kaggle.com/c/seizure-prediction
 - https://github.com/MichaelHills/seizure-detection
