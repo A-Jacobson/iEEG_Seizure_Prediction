@@ -34,7 +34,7 @@ def read_file(path, features=False):
         print os.path.basename(path), e
 
 
-def remove_dropout(dirname, dirpath=os.path.abspath(os.path.join('E:', 'Seizure_Data'))):
+def remove_full_dropout(dirname, dirpath=os.path.abspath(os.path.join('E:', 'Seizure_Data'))):
     path = os.path.join(dirpath, dirname, '*.mat')
     dest = os.path.join(dirpath, 'skip', dirname)
     if not os.path.exists(dest):
@@ -51,12 +51,14 @@ def load_data(dirname, dirpath=os.path.abspath(os.path.join('E:', 'Seizure_Data'
     files = glob(path)
     if sample > 0:
         files = random.sample(files, sample)
+
     print "loading %d files" % (len(files))
+    fnames = np.array(map(os.path.basename, files))
     if features == True:
         X = (read_file(f, features=True) for f in files)
     else:
         X = (read_file(f, features=False) for f in files)
-    fnames = np.array(map(os.path.basename, files))
+
     if 'train' in dirname:
         y = np.array(map(get_label, fnames))
         return X, y, fnames
