@@ -6,6 +6,18 @@ from scipy.io import loadmat
 import random
 import shutil
 import pandas as pd
+import cPickle
+
+def load_features(X_name, transforms):
+    names = [t.get_name() for t in transforms]
+    names = 'empty' if len(names) == 0 else '_'.join(names)
+    fname = "%s_%s.pkl" % (X_name, names)
+    path = os.path.join('features', fname)
+    if os.path.isfile(path) == True:
+        with open(path, 'rb') as f:
+            return cPickle.load(f)
+    else:
+        print "%s does not exist" % (path)
 
 
 def get_skipped(dirname, dirpath=os.path.abspath(os.path.join('E:', 'Seizure_Data', 'skip'))):
@@ -51,8 +63,6 @@ def load_data(dirname, dirpath=os.path.abspath(os.path.join('E:', 'Seizure_Data'
     files = glob(path)
     if sample > 0:
         files = random.sample(files, sample)
-
-    print "found %d files" % (len(files))
     fnames = np.array(map(os.path.basename, files))
     X = (read_file(f, features=False) for f in files)
     if 'train' in dirname:
@@ -60,21 +70,6 @@ def load_data(dirname, dirpath=os.path.abspath(os.path.join('E:', 'Seizure_Data'
         return X, y, fnames
     return X, fnames
 
-def save_features():
-    pass
-
 
 def preds_to_df(files, preds):
     return pd.DataFrame({'File': files, 'Class': preds})
-
-
-
-
-class iEEG_Data:
-
-    def __init__(self, dirpath=os.path.abspath(os.path.join('E:', 'Seizure_Data')) ):
-        self.dirpath = dirpath
-
-
-if __name__ == '__main__':
-    pass

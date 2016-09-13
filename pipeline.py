@@ -2,6 +2,7 @@ import numpy as np
 import os
 import cPickle
 
+
 class Pipeline(object):
     """
     A Pipeline is an object representing the data transformations to make
@@ -9,6 +10,7 @@ class Pipeline(object):
     gen_ictal: Whether ictal data generation should be used for this pipeline
     pipeline: List of transforms to apply one by one to the input data
     """
+
     def __init__(self, pipeline):
         self.transforms = pipeline
         names = [t.get_name() for t in self.transforms]
@@ -26,13 +28,17 @@ class Pipeline(object):
             features.append(data)
         return np.array(features)
 
-    def to_file(self, X, files, X_name, y=None, dest_dir='feature_vectors'):
-        X = self.apply(X)
+    def to_file(self, X, files, X_name, y=None, dest_dir='features'):
         fname = "%s_%s.pkl" % (X_name, self.name)
         outpath = os.path.join(dest_dir, fname)
-        if y is None:
-            data = [X, files]
+        if os.path.isfile(outpath):
+            print "%s already exists" % (outpath)
         else:
-            data = [X, y, files]
-        with open(outpath, 'wb') as f:
-            cPickle.dump(data, f)
+            print "pipeline %s processing %s: %d files" % (self.name, X_name, len(files))
+            X = self.apply(X)
+            if y is None:
+                data = [X, files]
+            else:
+                data = [X, y, files]
+            with open(outpath, 'wb') as f:
+                cPickle.dump(data, f)

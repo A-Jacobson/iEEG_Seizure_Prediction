@@ -7,6 +7,7 @@ class FFT:
     """
     Apply Fast Fourier Transform to the last axis.
     """
+
     def get_name(self):
         return "fft"
 
@@ -19,6 +20,7 @@ class ICA:
     """
     apply ICA experimental!
     """
+
     def __init__(self, n_components=None):
         self.n_components = n_components
 
@@ -57,6 +59,7 @@ class Magnitude:
     """
     Take magnitudes of Complex data
     """
+
     def get_name(self):
         return "mag"
 
@@ -116,6 +119,7 @@ class Stats:
     """
     Subtract the mean, then take (min, max, standard_deviation) for each channel.
     """
+
     def get_name(self):
         return "stats"
 
@@ -172,6 +176,7 @@ class CorrelationMatrix:
     """
     Calculate correlation coefficients matrix across all EEG channels.
     """
+
     def get_name(self):
         return 'corr-mat'
 
@@ -184,6 +189,7 @@ class Eigenvalues:
     Take eigenvalues of a matrix, and sort them by magnitude in order to
     make them useful as features (as they have no inherent order).
     """
+
     def get_name(self):
         return 'eigenvalues'
 
@@ -193,9 +199,11 @@ class Eigenvalues:
         w.sort()
         return w
 
+
 def upper_right_triangle(matrix):
     indices = np.triu_indices_from(matrix)
     return np.asarray(matrix[indices])
+
 
 def slidingWindow(sequence, window, step=1):
     for i in range(0, sequence.shape[1] - window + 1, step):
