@@ -3,21 +3,24 @@ from sklearn.decomposition import FastICA, PCA
 from sklearn import preprocessing
 import numpy as np
 
+
 class UnitScale:
     """
     Scale across the last axis.
     """
+
     def get_name(self):
         return 'unit-scale'
 
     def apply(self, data):
-        return preprocessing.scale(data, axis=data.ndim-1)
+        return preprocessing.scale(data, axis=data.ndim - 1)
 
 
 class UnitScaleFeat:
     """
     Scale across the first axis, i.e. scale each feature.
     """
+
     def get_name(self):
         return 'unit-scale-feat'
 
@@ -159,6 +162,23 @@ class Stats:
         return out
 
 
+class Interp:
+    """
+    Interpolate zeros max --> min * 1.0
+    NOTE: try different methods later
+    """
+
+    def get_name(self):
+        return "interp"
+
+    def apply(self, data):
+        # interps 0 data before taking log
+        indices = np.where(data <= 0)
+        data[indices] = np.max(data)
+        data[indices] = (np.min(data) * 0.1)
+        return data
+
+
 class Log10:
     """
     Apply Log10
@@ -223,6 +243,7 @@ class Eigenvalues:
         w.sort()
         return w
 
+
 class FreqCorrelation:
     """
     Correlation in the frequency domain. First take FFT with (start, end) slice options,
@@ -231,6 +252,7 @@ class FreqCorrelation:
     The output features are (fft, upper_right_diagonal(correlation_coefficients), eigenvalues)
     Features can be selected/omitted using the constructor arguments.
     """
+
     def __init__(self, start, end, scale_option, with_fft=False, with_corr=True, with_eigen=True):
         self.start = start
         self.end = end
@@ -293,6 +315,7 @@ class TimeCorrelation:
     The output features are (upper_right_diagonal(correlation_coefficients), eigenvalues)
     Features can be selected/omitted using the constructor arguments.
     """
+
     def __init__(self, max_hz, scale_option, with_corr=True, with_eigen=True):
         self.max_hz = max_hz
         self.scale_option = scale_option
@@ -350,6 +373,7 @@ class TimeFreqCorrelation:
     """
     Combines time and frequency correlation, taking both correlation coefficients and eigenvalues.
     """
+
     def __init__(self, start, end, max_hz, scale_option):
         self.start = start
         self.end = end
@@ -362,15 +386,17 @@ class TimeFreqCorrelation:
 
     def apply(self, data):
         data1 = TimeCorrelation(self.max_hz, self.scale_option).apply(data)
-        data2 = FreqCorrelation(self.start, self.end, self.scale_option).apply(data)
+        data2 = FreqCorrelation(self.start, self.end,
+                                self.scale_option).apply(data)
         assert data1.ndim == data2.ndim
-        return np.concatenate((data1, data2), axis=data1.ndim-1)
+        return np.concatenate((data1, data2), axis=data1.ndim - 1)
 
 
 class FFTWithTimeFreqCorrelation:
     """
     Combines FFT with time and frequency correlation, taking both correlation coefficients and eigenvalues.
     """
+
     def __init__(self, start, end, max_hz, scale_option):
         self.start = start
         self.end = end
@@ -382,9 +408,10 @@ class FFTWithTimeFreqCorrelation:
 
     def apply(self, data):
         data1 = TimeCorrelation(self.max_hz, self.scale_option).apply(data)
-        data2 = FreqCorrelation(self.start, self.end, self.scale_option, with_fft=True).apply(data)
+        data2 = FreqCorrelation(self.start, self.end,
+                                self.scale_option, with_fft=True).apply(data)
         assert data1.ndim == data2.ndim
-        return np.concatenate((data1, data2), axis=data1.ndim-1)
+        return np.concatenate((data1, data2), axis=data1.ndim - 1)
 
 
 def upper_right_triangle(matrix):
