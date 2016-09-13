@@ -4,15 +4,15 @@ import numpy as np
 from glob import glob
 from scipy.io import loadmat
 import random
-from gen_features import extract_features
 import shutil
+import pandas as pd
 
 
 def get_skipped(dirname, dirpath=os.path.abspath(os.path.join('E:', 'Seizure_Data', 'skip'))):
     path = os.path.join(dirpath, dirname, '*.mat')
     files = np.array(map(os.path.basename, glob(path)))
     preds = np.zeros(len(files))
-    return preds, files
+    return preds_to_df(preds, files)
 
 
 def get_label(fname):
@@ -27,7 +27,7 @@ def read_file(path, features=False):
         ndata = {n: mat['dataStruct'][n][0, 0] for n in names}
         data = ndata['data']
         if features == True:
-            return extract_features(data.T)
+            return data.T
         else:
             return data.T
     except Exception as e:
@@ -46,27 +46,34 @@ def remove_full_dropout(dirname, dirpath=os.path.abspath(os.path.join('E:', 'Sei
             shutil.move(f, dest)
 
 
-def load_data(dirname, dirpath=os.path.abspath(os.path.join('E:', 'Seizure_Data')), sample=0, features=False):
+def load_data(dirname, dirpath=os.path.abspath(os.path.join('E:', 'Seizure_Data')), sample=0):
     path = os.path.join(dirpath, dirname, '*.mat')
     files = glob(path)
     if sample > 0:
         files = random.sample(files, sample)
 
-    print "loading %d files" % (len(files))
+    print "found %d files" % (len(files))
     fnames = np.array(map(os.path.basename, files))
-    if features == True:
-        X = (read_file(f, features=True) for f in files)
-    else:
-        X = (read_file(f, features=False) for f in files)
-
+    X = (read_file(f, features=False) for f in files)
     if 'train' in dirname:
         y = np.array(map(get_label, fnames))
         return X, y, fnames
     return X, fnames
 
+def save_features():
+    pass
+
 
 def preds_to_df(files, preds):
     return pd.DataFrame({'File': files, 'Class': preds})
+
+
+
+
+class iEEG_Data:
+
+    def __init__(self, dirpath=os.path.abspath(os.path.join('E:', 'Seizure_Data')) ):
+        self.dirpath = dirpath
 
 
 if __name__ == '__main__':
