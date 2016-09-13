@@ -1,12 +1,14 @@
 from pipeline import Pipeline
 from eeg_io import load_data
 from transforms import *
+import multiprocessing as mp
 
 pipelines = [
     # statstical features
     Pipeline([Mean()]),
     Pipeline([Mean(), Abs()]),
     Pipeline([Stats()]),
+    Pipeline([CorrelationMatrix()]),
     # time domain features
     Pipeline([Resample(600)]),
     Pipeline([LPF(5.0), Resample(600)]),
@@ -16,22 +18,24 @@ pipelines = [
     Pipeline([FFT(), Slice(1, 96), Magnitude(), Log10()]),
     Pipeline([FFT(), Slice(1, 128), Magnitude(), Log10()]),
     Pipeline([FFT(), Slice(1, 160), Magnitude(), Log10()]),
-    Pipeline([FFT(), Magnitude(), Log10()])
+    # combination features (under construction)
+    # Pipeline([FFTWithTimeFreqCorrelation(1, 48, 400, 'usf')]), # winning submission
+    # Pipeline([FFTWithTimeFreqCorrelation(1, 48, 400, 'usf')]),
 ]
 
-train_folders = ['train_1', 'train_2', 'train_3']
-test_folders = ['test_1', 'test_2', 'test_3']
+folders = ['train_1', 'test_1', 'train_2', 'test_2', 'train_3', 'test_3']
 
-def train_to_file(folder):
-    X, y, files = load_data(t)
-    p.to_file(X, files, t, y)
+def gen_features(folder):
+    if 'train' in folder:
+        for p in pipelines:
+            X, y, files = load_data(folder)
+            p.to_file(X, files, folder, y)
+    else:
+        for p in pipelines:
+            X, files = load_data(folder)
+            p.to_file(X, files, folder)
 
-for t in train_folders:
-    for p in pipelines:
-        X, y, files = load_data(t)
-        p.to_file(X, files, t, y)
 
-for t in test_folders:
-    for p in pipelines:
-        X, files = load_data(t)
-        p.to_file(X, files, t)
+if __name__ == '__main__':
+    p = mp.Pool(5)
+    p.map(gen_features, folders)
