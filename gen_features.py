@@ -9,9 +9,15 @@ pipelines = [
     Pipeline([Mean(), Abs()]),
     Pipeline([Stats()]),
     Pipeline([CorrelationMatrix()]),
+    # Pipeline([CorrelationMatrix(), Eigenvalues()]), # under construction
+
     # time domain features
     Pipeline([Resample(600)]),
     Pipeline([LPF(5.0), Resample(600)]),
+    Pipeline([Interp(), Resample(600)]),
+    Pipeline([Resample(1200)]),
+    Pipeline([LPF(5.0), Resample(1200)]),
+    Pipeline([Interp(), Resample(1200)]),
     # frequency domain features
     Pipeline([FFT(), Slice(1, 48), Magnitude(), Log10()]),
     Pipeline([FFT(), Slice(1, 64), Magnitude(), Log10()]),
@@ -19,7 +25,7 @@ pipelines = [
     Pipeline([FFT(), Slice(1, 128), Magnitude(), Log10()]),
     Pipeline([FFT(), Slice(1, 160), Magnitude(), Log10()]),
     # combination features (under construction)
-    # Pipeline([FFTWithTimeFreqCorrelation(1, 48, 400, 'usf')]), # winning submission
+    # Pipeline([FFTWithTimeFreqCorrelation(1, 48, 400, 'usf')]), 
     # Pipeline([FFTWithTimeFreqCorrelation(1, 48, 400, 'usf')]),
 ]
 
@@ -37,5 +43,5 @@ def gen_features(folder):
 
 
 if __name__ == '__main__':
-    p = mp.Pool(5)
+    p = mp.Pool(6)
     p.map(gen_features, folders)
