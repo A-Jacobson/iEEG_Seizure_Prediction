@@ -71,5 +71,13 @@ def load_data(dirname, dirpath=os.path.abspath(os.path.join('E:', 'Seizure_Data'
     return X, fnames
 
 
-def preds_to_df(files, preds):
-    return pd.DataFrame({'File': files, 'Class': preds})
+def preds_to_df(preds, files, submission=True):
+    df = pd.DataFrame({'File': files, 'Class': preds})
+    df = df[['File', 'Class']]
+    if submission == True:
+        df['Class'] = df['Class'].astype(int)
+    return df
+
+def preds_to_csv(preds, files, name, submission=True):
+    df = preds_to_df(preds, files, submission)
+    df.to_csv(os.path.join('predictions', name), index=False)
