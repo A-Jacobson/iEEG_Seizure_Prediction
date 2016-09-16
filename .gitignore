@@ -3,3 +3,4 @@
 *.csv
 *.pkl
 *.h5
+*.model

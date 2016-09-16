@@ -25,7 +25,9 @@ class Pipeline(object):
         for data in data_gen:
             for transform in self.transforms:
                 data = transform.apply(data)
+                print data
             features.append(data)
+        print features
         return np.array(features)
 
     def to_file(self, X, files, X_name, y=None, dest_dir='features'):

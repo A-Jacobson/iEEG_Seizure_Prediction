@@ -2,6 +2,39 @@ from scipy.signal import butter, lfilter, resample, firwin, decimate
 from sklearn.decomposition import FastICA, PCA
 from sklearn import preprocessing
 import numpy as np
+import pandas as np
+import matplotlib.pyplot as plt
+import scipy
+import pandas as pd
+
+
+class SpectrogramImage:
+    """
+    Plot spectrogram for each channel and convert it to numpy image array.
+    """
+    def __init__(self, size=(224, 224, 4)):
+        self.size = size
+
+    def get_name(self):
+        return 'img-spec-{}'.format(self.size)
+
+    def drop_zeros(self, df):
+        return df[(df.T != 0).any()]
+
+    def apply(self, data):
+        data = pd.DataFrame(data.T)
+        data = self.drop_zeros(data)
+        channels = []
+        for col in data.columns:
+            plt.ioff()
+            _, _, _, _ = plt.specgram(data[col], NFFT=2048, Fs=240000/600, noverlap=int((240000/600)*0.005), cmap=plt.cm.spectral)
+            plt.axis('off')
+            plt.savefig('spec.png', bbox_inches='tight', pad_inches=0)
+            plt.close()
+            im = scipy.misc.imread('spec.png', mode='RGB')
+            im = scipy.misc.imresize(im, (224, 224, 3))
+            channels.append(im)
+        return channels
 
 
 class UnitScale:
